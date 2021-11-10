@@ -10,7 +10,7 @@ namespace Core
         private readonly IDagConfig<T> _dagConfig;
 
         /// <summary>
-        ///     Collection with the actual data
+        ///     Collection with the actual data.
         /// </summary>
         private readonly Dictionary<T, Vertex<T>> _vertices = new();
 
@@ -23,7 +23,7 @@ namespace Core
 
         /// <summary>
         ///     Adds a new edge to the graph. If the child and/or parent doesn't already exists, they are automatically added
-        ///     to the graph
+        ///     to the graph.
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="child"></param>
@@ -46,7 +46,7 @@ namespace Core
         }
 
         /// <summary>
-        ///     Removes an edge from two vertices. The direction doesn't matter in this case
+        ///     Removes an edge from two vertices. The direction doesn't matter in this case.
         /// </summary>
         /// <param name="vertex1"></param>
         /// <param name="vertex2"></param>
@@ -66,7 +66,7 @@ namespace Core
 
             firstVertex.Childs.Remove(secondVertex);
             firstVertex.Parents.Remove(secondVertex);
-            
+
             secondVertex.Childs.Remove(firstVertex);
             secondVertex.Parents.Remove(firstVertex);
 
@@ -82,7 +82,7 @@ namespace Core
         }
 
         /// <summary>
-        /// 
+        ///     Gets the vertex of the specified value.
         /// </summary>
         /// <param name="value"></param>
         /// <returns>the vertex found, else null</returns>
