@@ -1,8 +1,8 @@
 ﻿using System;
-using Core.Interfaces;
-using Core.SearchAlgorithms;
+using Dag.Net.Core.Interfaces;
+using Dag.Net.Core.SearchAlgorithms;
 
-namespace Core
+namespace Dag.Net.Core
 {
     public class DagConfig<T> : IDagConfig<T>
     {

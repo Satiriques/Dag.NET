@@ -1,4 +1,4 @@
-﻿namespace Core
+﻿namespace Dag.Net.Core
 {
     public class ValidationResult
     {

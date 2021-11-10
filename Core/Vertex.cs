@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Core
+namespace Dag.Net.Core
 {
     public class Vertex<T>
     {

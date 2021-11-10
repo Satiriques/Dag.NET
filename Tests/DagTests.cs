@@ -1,6 +1,6 @@
 using System.Linq;
-using Core;
-using Core.SearchAlgorithms;
+using Dag.Net.Core.SearchAlgorithms;
+using Dag.Net.Core;
 using NUnit.Framework;
 
 namespace Tests

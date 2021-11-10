@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dag.Net.Core.Interfaces;
 
 // parent -> child
-namespace Core
+namespace Dag.Net.Core
 {
     public class Dag<T>
     {

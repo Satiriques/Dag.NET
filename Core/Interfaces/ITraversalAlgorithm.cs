@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Core.Interfaces
+namespace Dag.Net.Core.Interfaces
 {
     /// <summary>
     /// 

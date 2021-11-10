@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Core.Interfaces;
+using Dag.Net.Core.Interfaces;
 
-namespace Core.SearchAlgorithms
+namespace Dag.Net.Core.SearchAlgorithms
 {
     public class BreathFirstSearch<T> : ITraversalAlgorithm<T>
     {

@@ -1,6 +1,4 @@
-﻿using Core.Interfaces;
-
-namespace Core
+﻿namespace Dag.Net.Core.Interfaces
 {
     public interface IDagConfig<T>
     {
