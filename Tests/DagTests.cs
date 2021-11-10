@@ -39,6 +39,19 @@ namespace Tests
         }
 
         [Test]
+        public void DfsTest()
+        {
+            var dfs = new DepthFirstSearch<string>();
+            var graph = new Dag<string>();
+
+            Assert.IsTrue(graph.AddEdge("a", "b").Successful);
+            Assert.IsTrue(graph.AddEdge("b", "d").Successful);
+            Assert.IsTrue(graph.AddEdge("e", "d").Successful);
+
+            Assert.AreEqual(3, dfs.Explore(graph, "a", "d", x => x.GetChilds()).Count);
+        }
+
+        [Test]
         public void FindPathTest()
         {
             var bfs = new BreathFirstSearch<string>();
@@ -70,6 +83,22 @@ namespace Tests
             graph.AddEdge("car", "honda");
 
             var result = bfs.Explore(graph, "honda", null, x => x.GetParents());
+            
+            Assert.AreEqual(3, result.Count);
+            Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
+        }
+        
+        [Test]
+        public void TaggingTestDfs()
+        {
+            var dfs = new DepthFirstSearch<string>();
+            var graph = new Dag<string>();
+
+            graph.AddEdge("vehicle", "car");
+            graph.AddEdge("vehicle", "moto");
+            graph.AddEdge("car", "honda");
+
+            var result = dfs.Explore(graph, "honda", null, x => x.GetParents());
             
             Assert.AreEqual(3, result.Count);
             Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
