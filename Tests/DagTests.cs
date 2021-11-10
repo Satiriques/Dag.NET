@@ -39,6 +39,43 @@ namespace Tests
         }
 
         [Test]
+        public void FindPathTest()
+        {
+            var bfs = new BreathFirstSearch<string>();
+            var graph = new Dag<string>();
+
+            // b ---|
+            //      v
+            // a -> b
+            // |
+            // |--> c
+            graph.AddEdge("a", "b");
+            graph.AddEdge("a", "c");
+            graph.AddEdge("e", "b");
+
+           var result = bfs.Explore(graph, "a", null, x => x.GetChilds());
+           
+           Assert.AreEqual(3, result.Count);
+           Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"a", "b", "c"}));
+        }
+
+        [Test]
+        public void TaggingTest()
+        {
+            var bfs = new BreathFirstSearch<string>();
+            var graph = new Dag<string>();
+
+            graph.AddEdge("vehicle", "car");
+            graph.AddEdge("vehicle", "moto");
+            graph.AddEdge("car", "honda");
+
+            var result = bfs.Explore(graph, "honda", null, x => x.GetParents());
+            
+            Assert.AreEqual(3, result.Count);
+            Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
+        }
+
+        [Test]
         public void UnrelatedVertexTest()
         {
             var graph = new Dag<string>();
