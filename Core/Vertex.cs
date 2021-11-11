@@ -5,7 +5,7 @@ namespace Dag.Net.Core
 {
     public class Vertex<T>
     {
-        public T Value { get; init; }
+        public T Value { get; internal set; }
         internal HashSet<Vertex<T>> Childs { get; } = new();
         internal HashSet<Vertex<T>> Parents { get; } = new();
 

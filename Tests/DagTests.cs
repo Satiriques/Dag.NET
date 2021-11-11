@@ -78,9 +78,7 @@ namespace Tests
             var bfs = new BreathFirstSearch<string>();
             var graph = new Dag<string>();
 
-            graph.AddEdge("vehicle", "car");
-            graph.AddEdge("vehicle", "moto");
-            graph.AddEdge("car", "honda");
+            VehicleSetup(graph);
 
             var result = bfs.Explore(graph, "honda", null, x => x.GetParents());
             
@@ -94,9 +92,7 @@ namespace Tests
             var dfs = new DepthFirstSearch<string>();
             var graph = new Dag<string>();
 
-            graph.AddEdge("vehicle", "car");
-            graph.AddEdge("vehicle", "moto");
-            graph.AddEdge("car", "honda");
+            VehicleSetup(graph);
 
             var result = dfs.Explore(graph, "honda", null, x => x.GetParents());
             
@@ -144,6 +140,62 @@ namespace Tests
             Assert.IsEmpty(vertexD.GetChilds());
             Assert.AreEqual(1, vertexD.GetParents().Length);
             Assert.IsTrue(vertexD.GetParents().Any(x => x.Value == vertexC.Value));
+        }
+
+        [Test]
+        public void ReplaceVertexTest()
+        {
+            var graph = new Dag<string>();
+            
+            VehicleSetup(graph);
+
+            Assert.IsTrue(graph.ReplaceVertex("car", "car2").Successful);
+ 
+            var hondaVertex = graph.GetVertex("honda");
+            var vehicleVertex = graph.GetVertex("vehicle");
+            var car2Vertex = graph.GetVertex("car2");
+            var motoVertex = graph.GetVertex("moto");
+            
+            Assert.IsNull(graph.GetVertex("car"));
+            
+            Assert.IsNotNull(hondaVertex);
+            Assert.AreEqual(1, hondaVertex.GetParents().Length);
+            Assert.IsEmpty(hondaVertex.GetChilds());
+            Assert.IsTrue(hondaVertex.GetParents().Any(x=>x.Value == car2Vertex.Value));
+            
+            Assert.IsNotNull(car2Vertex);
+            Assert.AreEqual(1, car2Vertex.GetChilds().Length);
+            Assert.AreEqual(1, car2Vertex.GetParents().Length);
+            Assert.IsTrue(car2Vertex.GetChilds().Any(x=>x.Value == hondaVertex.Value));
+            Assert.IsTrue(car2Vertex.GetParents().Any(x=>x.Value == vehicleVertex.Value));
+            
+            Assert.IsNotNull(motoVertex);
+            Assert.IsEmpty(motoVertex.GetChilds());
+            Assert.AreEqual(1, motoVertex.GetParents().Length);
+            Assert.IsTrue(motoVertex.GetParents().Any(x=>x.Value == vehicleVertex.Value));
+            
+            Assert.IsNotNull(vehicleVertex);
+            Assert.IsEmpty(vehicleVertex.GetParents());
+            Assert.AreEqual(2, vehicleVertex.GetChilds().Length);
+            Assert.IsTrue(vehicleVertex.GetChilds().Any(x=>x.Value == motoVertex.Value));
+            Assert.IsTrue(vehicleVertex.GetChilds().Any(x=>x.Value == car2Vertex.Value));
+        }
+        
+        [Test]
+        public void InvalidReplaceVertexTest()
+        {
+            var graph = new Dag<string>();
+            
+            VehicleSetup(graph);
+
+            Assert.IsFalse(graph.ReplaceVertex("car", "moto").Successful);
+        }
+
+        private static void VehicleSetup(Dag<string> graph)
+        {
+            Assert.IsTrue(graph.AddEdge("vehicle", "car").Successful);
+            Assert.IsTrue(graph.AddEdge("vehicle", "moto").Successful);
+            Assert.IsTrue(graph.AddEdge("car", "honda").Successful);
         }
     }
 }

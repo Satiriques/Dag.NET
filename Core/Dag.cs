@@ -74,6 +74,31 @@ namespace Dag.Net.Core
             return ValidationResult.Success;
         }
 
+        public ValidationResult ReplaceVertex(T valueToBeReplaced, T newValue)
+        {
+            if (valueToBeReplaced == null) throw new ArgumentNullException(nameof(valueToBeReplaced));
+            if (newValue == null) throw new ArgumentNullException(nameof(newValue));
+
+            var vertexToBeReplaced = GetVertex(valueToBeReplaced);
+
+            if (vertexToBeReplaced == null)
+            {
+                return new ValidationResult {Successful = false, Message = $"Vertex {valueToBeReplaced} was not found"};
+            }
+
+            if (GetVertex(newValue) != null)
+            {
+                return new ValidationResult
+                    {Successful = false, Message = $"Vertex {newValue} was already in the graph"};
+            }
+
+            vertexToBeReplaced.Value = newValue;
+            _vertices.Remove(valueToBeReplaced);
+            _vertices.Add(newValue, vertexToBeReplaced);
+
+            return ValidationResult.Success;
+        }
+
         private bool ValidateCycling(T parent, T child)
         {
             if (!_vertices.ContainsKey(parent) || !_vertices.ContainsKey(child))
