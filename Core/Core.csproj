@@ -3,6 +3,11 @@
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>Dag.Net.Core</RootNamespace>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Company>Dag.Net</Company>
+        <Product>Dag.Net</Product>
+        <PackageId>Dag.Net</PackageId>
+        <Authors>Satiriques</Authors>
     </PropertyGroup>
 
     <ItemGroup>
