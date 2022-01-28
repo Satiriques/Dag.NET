@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using Dag.Net.Core.SearchAlgorithms;
 using Dag.Net.Core;
@@ -21,8 +22,8 @@ namespace Tests
         {
             var graph = new Dag<string>();
 
-            Assert.IsTrue(graph.AddEdge("a", "b").Successful);
-            Assert.IsFalse(graph.AddEdge("b", "a").Successful);
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeUnsuccessfully("b", "a");
         }
 
         [Test]
@@ -31,9 +32,9 @@ namespace Tests
             var bfs = new BreathFirstSearch<string>();
             var graph = new Dag<string>();
 
-            Assert.IsTrue(graph.AddEdge("a", "b").Successful);
-            Assert.IsTrue(graph.AddEdge("b", "d").Successful);
-            Assert.IsTrue(graph.AddEdge("e", "d").Successful);
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("b", "d");
+            graph.AddEdgeSuccessfully("e", "d");
 
             Assert.AreEqual(3, bfs.Explore(graph, "a", "d", x => x.GetChilds()).Count);
         }
@@ -44,9 +45,9 @@ namespace Tests
             var dfs = new DepthFirstSearch<string>();
             var graph = new Dag<string>();
 
-            Assert.IsTrue(graph.AddEdge("a", "b").Successful);
-            Assert.IsTrue(graph.AddEdge("b", "d").Successful);
-            Assert.IsTrue(graph.AddEdge("e", "d").Successful);
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("b", "d");
+            graph.AddEdgeSuccessfully("e", "d");
 
             Assert.AreEqual(3, dfs.Explore(graph, "a", "d", x => x.GetChilds()).Count);
         }
@@ -57,19 +58,40 @@ namespace Tests
             var bfs = new BreathFirstSearch<string>();
             var graph = new Dag<string>();
 
-            // b ---|
+            // e ---|
             //      v
             // a -> b
             // |
             // |--> c
-            graph.AddEdge("a", "b");
-            graph.AddEdge("a", "c");
-            graph.AddEdge("e", "b");
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("a", "c");
+            graph.AddEdgeSuccessfully("e", "b");
 
-           var result = bfs.Explore(graph, "a", null, x => x.GetChilds());
-           
-           Assert.AreEqual(3, result.Count);
-           Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"a", "b", "c"}));
+            var result = bfs.Explore(graph, "a", null, x => x.GetChilds());
+
+            Assert.AreEqual(3, result.Count);
+            Assert.That(result.Select(x => x.Value), Is.EquivalentTo(new[] {"a", "b", "c"}));
+        }
+        
+        [Test]
+        public void FindReversePathTest()
+        {
+            var bfs = new BreathFirstSearch<string>();
+            var graph = new Dag<string>();
+
+            // e ---|
+            //      v
+            // a -> b
+            // |
+            // |--> c
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("a", "c");
+            graph.AddEdgeSuccessfully("e", "b");
+
+            var result = bfs.Explore(graph, "c", null, x => x.GetParents());
+
+            Assert.AreEqual(2, result.Count);
+            Assert.That(result.Select(x => x.Value), Is.EquivalentTo(new[] {"c", "a"}));
         }
 
         [Test]
@@ -81,11 +103,23 @@ namespace Tests
             VehicleSetup(graph);
 
             var result = bfs.Explore(graph, "honda", null, x => x.GetParents());
-            
+
             Assert.AreEqual(3, result.Count);
-            Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
+            Assert.That(result.Select(x => x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
         }
-        
+
+        [Test]
+        public void MultiplePathsTest()
+        {
+            var graph = new Dag<string>();
+            
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("a", "c");
+            graph.AddEdgeSuccessfully("b", "d");
+            graph.AddEdgeSuccessfully("c", "d");
+
+        }
+
         [Test]
         public void TaggingTestDfs()
         {
@@ -95,9 +129,9 @@ namespace Tests
             VehicleSetup(graph);
 
             var result = dfs.Explore(graph, "honda", null, x => x.GetParents());
-            
+
             Assert.AreEqual(3, result.Count);
-            Assert.That(result.Select(x=>x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
+            Assert.That(result.Select(x => x.Value), Is.EquivalentTo(new[] {"honda", "car", "vehicle"}));
         }
 
         [Test]
@@ -105,8 +139,8 @@ namespace Tests
         {
             var graph = new Dag<string>();
 
-            Assert.IsTrue(graph.AddEdge("a", "b").Successful);
-            Assert.IsTrue(graph.AddEdge("c", "d").Successful);
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("c", "d");
         }
 
         [Test]
@@ -114,9 +148,9 @@ namespace Tests
         {
             var graph = new Dag<string>();
 
-            Assert.IsTrue(graph.AddEdge("a", "b").Successful);
-            Assert.IsTrue(graph.AddEdge("b", "c").Successful);
-            Assert.IsTrue(graph.AddEdge("c", "d").Successful);
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeSuccessfully("b", "c");
+            graph.AddEdgeSuccessfully("c", "d");
 
             Assert.IsTrue(graph.RemoveEdge("b", "c").Successful);
 
@@ -146,46 +180,46 @@ namespace Tests
         public void ReplaceVertexTest()
         {
             var graph = new Dag<string>();
-            
+
             VehicleSetup(graph);
 
             Assert.IsTrue(graph.ReplaceVertex("car", "car2").Successful);
- 
+
             var hondaVertex = graph.GetVertex("honda");
             var vehicleVertex = graph.GetVertex("vehicle");
             var car2Vertex = graph.GetVertex("car2");
             var motoVertex = graph.GetVertex("moto");
-            
+
             Assert.IsNull(graph.GetVertex("car"));
-            
+
             Assert.IsNotNull(hondaVertex);
             Assert.AreEqual(1, hondaVertex.GetParents().Length);
             Assert.IsEmpty(hondaVertex.GetChilds());
-            Assert.IsTrue(hondaVertex.GetParents().Any(x=>x.Value == car2Vertex.Value));
-            
+            Assert.IsTrue(hondaVertex.GetParents().Any(x => x.Value == car2Vertex.Value));
+
             Assert.IsNotNull(car2Vertex);
             Assert.AreEqual(1, car2Vertex.GetChilds().Length);
             Assert.AreEqual(1, car2Vertex.GetParents().Length);
-            Assert.IsTrue(car2Vertex.GetChilds().Any(x=>x.Value == hondaVertex.Value));
-            Assert.IsTrue(car2Vertex.GetParents().Any(x=>x.Value == vehicleVertex.Value));
-            
+            Assert.IsTrue(car2Vertex.GetChilds().Any(x => x.Value == hondaVertex.Value));
+            Assert.IsTrue(car2Vertex.GetParents().Any(x => x.Value == vehicleVertex.Value));
+
             Assert.IsNotNull(motoVertex);
             Assert.IsEmpty(motoVertex.GetChilds());
             Assert.AreEqual(1, motoVertex.GetParents().Length);
-            Assert.IsTrue(motoVertex.GetParents().Any(x=>x.Value == vehicleVertex.Value));
-            
+            Assert.IsTrue(motoVertex.GetParents().Any(x => x.Value == vehicleVertex.Value));
+
             Assert.IsNotNull(vehicleVertex);
             Assert.IsEmpty(vehicleVertex.GetParents());
             Assert.AreEqual(2, vehicleVertex.GetChilds().Length);
-            Assert.IsTrue(vehicleVertex.GetChilds().Any(x=>x.Value == motoVertex.Value));
-            Assert.IsTrue(vehicleVertex.GetChilds().Any(x=>x.Value == car2Vertex.Value));
+            Assert.IsTrue(vehicleVertex.GetChilds().Any(x => x.Value == motoVertex.Value));
+            Assert.IsTrue(vehicleVertex.GetChilds().Any(x => x.Value == car2Vertex.Value));
         }
-        
+
         [Test]
         public void InvalidReplaceVertexTest()
         {
             var graph = new Dag<string>();
-            
+
             VehicleSetup(graph);
 
             Assert.IsFalse(graph.ReplaceVertex("car", "moto").Successful);
@@ -193,9 +227,62 @@ namespace Tests
 
         private static void VehicleSetup(Dag<string> graph)
         {
-            Assert.IsTrue(graph.AddEdge("vehicle", "car").Successful);
-            Assert.IsTrue(graph.AddEdge("vehicle", "moto").Successful);
-            Assert.IsTrue(graph.AddEdge("car", "honda").Successful);
+            graph.AddEdgeSuccessfully("vehicle", "car");
+            graph.AddEdgeSuccessfully("vehicle", "moto");
+            graph.AddEdgeSuccessfully("car", "honda");
+        }
+
+        [Test]
+        public void AddDuplicateTest()
+        {
+            var graph = new Dag<string>();
+
+            graph.AddEdgeSuccessfully("a", "b");
+            graph.AddEdgeUnsuccessfully("a", "b");
+        }
+
+        [Test]
+        public void ManualValidationTest()
+        {
+            var graph = new Dag<string>();
+            
+            graph.AddEdgeSuccessfully("a", "b");
+            Assert.IsFalse(graph.ValidateAddEdge("a", "b").Successful);
+            Assert.IsFalse(graph.ValidateAddEdge("b", "a").Successful);
+            
+            Assert.IsTrue(graph.ValidateAddEdge("b", "c").Successful);
+            // we make sure that it's not actually added
+            Assert.IsNull(graph.GetVertex("c"));
+        }
+
+        // [Test]
+        // public void ToJsonTest()
+        // {
+        //     var graph = new Dag<string>();
+        //
+        //     VehicleSetup(graph);
+        //
+        //     var json = graph.ToJson();
+        // }
+
+        [Test]
+        public void CopyTest()
+        {
+            var graph = new Dag<string>();
+
+            VehicleSetup(graph);
+
+            var newGraph = graph.Copy();
+            
+            Assert.IsTrue(graph.GetAllVertices().Count() == newGraph.GetAllVertices().Count());
+
+            var zippedVertices = graph.GetAllVertices().Zip(newGraph.GetAllVertices());
+
+            foreach (var (first, second) in zippedVertices)
+            {
+                Assert.AreEqual(first.Value, second.Value);
+                Assert.IsFalse(ReferenceEquals(first, second));
+            }
         }
     }
 }

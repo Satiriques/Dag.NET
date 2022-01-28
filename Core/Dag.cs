@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dag.Net.Core.Interfaces;
+using Newtonsoft.Json;
 
 // parent -> child
 namespace Dag.Net.Core
@@ -14,6 +15,8 @@ namespace Dag.Net.Core
         ///     Collection with the actual data.
         /// </summary>
         private readonly Dictionary<T, Vertex<T>> _vertices = new();
+
+        private readonly List<(T Parent, T Child)> _edges = new();
 
         /// <summary>
         /// </summary>
@@ -31,9 +34,21 @@ namespace Dag.Net.Core
         /// <returns></returns>
         public ValidationResult AddEdge(T parent, T child)
         {
-            if (!ValidateCycling(parent, child))
-                return new ValidationResult {Successful = false, Message = "Added a cycle."};
+            if (parent.Equals(_lastAddEdgeValidation.Parent) && _lastAddEdgeValidation.Equals(child))
+                return _lastAddEdgeValidation.Result;
 
+            var result = ValidateAddEdge(parent, child);
+
+            if (!result.Successful)
+                return result;
+
+            AddEdgeInternal(parent, child);
+
+            return ValidationResult.Success;
+        }
+
+        private void AddEdgeInternal(T parent, T child)
+        {
             var parentVertex = _vertices.GetValueOrDefault(parent) ?? new Vertex<T> {Value = parent};
             var childVertex = _vertices.GetValueOrDefault(child) ?? new Vertex<T> {Value = child};
 
@@ -43,6 +58,26 @@ namespace Dag.Net.Core
             _vertices[parent] = parentVertex;
             _vertices[child] = childVertex;
 
+            _edges.Add((parent, child));
+        }
+
+        private (ValidationResult Result, T Parent, T Child) _lastAddEdgeValidation;
+
+        public ValidationResult ValidateAddEdge(T parent, T child)
+        {
+            if (parent.Equals(_lastAddEdgeValidation.Parent) && _lastAddEdgeValidation.Equals(child))
+                return _lastAddEdgeValidation.Result;
+
+            if (!ValidateCycling(parent, child))
+            {
+                return new ValidationResult {Successful = false, Message = "Added a cycle."};
+            }
+
+            if (!ValidateDuplicate(parent, child))
+            {
+                return new ValidationResult {Successful = false, Message = "Added a duplicate."};
+            }
+            
             return ValidationResult.Success;
         }
 
@@ -99,12 +134,35 @@ namespace Dag.Net.Core
             return ValidationResult.Success;
         }
 
+        private bool ValidateDuplicate(T parent, T child)
+        {
+            return !_edges.Contains((parent, child));
+        }
+
         private bool ValidateCycling(T parent, T child)
         {
+            var result = false;
+            
             if (!_vertices.ContainsKey(parent) || !_vertices.ContainsKey(child))
-                return true;
+            {
+                result = true;
+            }
+            else
+            {
+                var explored = _dagConfig.TraversalAlgorithm.Explore(this, parent, child, v => v.Parents);
 
-            return !_dagConfig.TraversalAlgorithm.Explore(this, parent, child, v => v.Parents).Any();
+                if (!explored.Any(x => x.Value.Equals(parent)) || !explored.Any(x => x.Value.Equals(child)))
+                {
+                    result = true;
+                }
+
+                // result = !_dagConfig.TraversalAlgorithm.Explore(this, parent, child, v => v.Parents).Any();
+            }
+
+            _lastAddEdgeValidation = (
+                Result: new ValidationResult {Successful = result, Message = result ? null : "Added a cycle."},
+                Parent: parent, Child: child);
+            return result;
         }
 
         /// <summary>
@@ -115,6 +173,55 @@ namespace Dag.Net.Core
         public Vertex<T> GetVertex(T value)
         {
             return _vertices.GetValueOrDefault(value);
+        }
+
+        // public string ToJson()
+        // {
+        //     return JsonConvert.SerializeObject(_edges, Formatting.Indented);
+        // }
+
+        // public bool TryLoadJson(string json)
+        // {
+        //     List<(T Parent, T Child)> edges = null;
+        //     
+        //     try
+        //     {
+        //         edges = JsonConvert.DeserializeObject<List<(T Parent, T Child)>>(json);
+        //     }
+        //     catch
+        //     {
+        //         return false;
+        //     }
+        //
+        //     if (edges == null)
+        //         return false;
+        //
+        //     _vertices.Clear();
+        //     _edges.Clear();
+        //     
+        //     foreach (var (parent, child) in edges)
+        //     {
+        //         AddEdgeInternal(parent, child);
+        //     }
+        //     
+        //     return true;
+        // }
+
+        public Dag<T> Copy()
+        {
+            var dag = new Dag<T>();
+
+            foreach (var (parent, child) in _edges)
+            {
+                dag.AddEdgeInternal(parent, child);
+            }
+
+            return dag;
+        }
+
+        public IEnumerable<Vertex<T>> GetAllVertices()
+        {
+            return _vertices.Values;
         }
     }
 }

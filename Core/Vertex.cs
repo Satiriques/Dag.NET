@@ -3,6 +3,10 @@ using System.Collections.Immutable;
 
 namespace Dag.Net.Core
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class Vertex<T>
     {
         public T Value { get; internal set; }
