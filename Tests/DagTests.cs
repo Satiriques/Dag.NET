@@ -183,7 +183,7 @@ namespace Tests
 
             VehicleSetup(graph);
 
-            Assert.IsTrue(graph.ReplaceVertex("car", "car2").Successful);
+            Assert.IsTrue(graph.RenameVertex("car", "car2").Successful);
 
             var hondaVertex = graph.GetVertex("honda");
             var vehicleVertex = graph.GetVertex("vehicle");
@@ -222,7 +222,7 @@ namespace Tests
 
             VehicleSetup(graph);
 
-            Assert.IsFalse(graph.ReplaceVertex("car", "moto").Successful);
+            Assert.IsFalse(graph.RenameVertex("car", "moto").Successful);
         }
 
         private static void VehicleSetup(Dag<string> graph)
@@ -240,7 +240,7 @@ namespace Tests
             graph.AddEdgeSuccessfully("a", "b");
             graph.AddEdgeUnsuccessfully("a", "b");
         }
-
+    
         [Test]
         public void ManualValidationTest()
         {
@@ -283,6 +283,22 @@ namespace Tests
                 Assert.AreEqual(first.Value, second.Value);
                 Assert.IsFalse(ReferenceEquals(first, second));
             }
+        }
+        
+        
+        [Test]
+        public void RenameVertexTest()
+        {
+            var graph = new Dag<string>();
+
+            VehicleSetup(graph);
+
+            Assert.IsTrue(graph.RenameVertex("car", "car2").Successful);
+            
+            Assert.IsNull(graph.GetVertex("car"));
+
+            var carVertex = graph.GetVertex("car2");
+            Assert.IsNotNull(carVertex);
         }
     }
 }

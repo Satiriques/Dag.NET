@@ -8,7 +8,8 @@
         <Product>Dag.Net</Product>
         <PackageId>Dag.Net</PackageId>
         <Authors>Satiriques</Authors>
-        <PackageLicenseUrl>LICENSE</PackageLicenseUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageVersion>1.0.1</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>

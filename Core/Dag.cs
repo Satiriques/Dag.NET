@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Dag.Net.Core.Interfaces;
 using Newtonsoft.Json;
@@ -7,6 +8,10 @@ using Newtonsoft.Json;
 // parent -> child
 namespace Dag.Net.Core
 {
+    /// <summary>
+    /// Directed Acyclic Graph
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class Dag<T>
     {
         private readonly IDagConfig<T> _dagConfig;
@@ -109,31 +114,6 @@ namespace Dag.Net.Core
             return ValidationResult.Success;
         }
 
-        public ValidationResult ReplaceVertex(T valueToBeReplaced, T newValue)
-        {
-            if (valueToBeReplaced == null) throw new ArgumentNullException(nameof(valueToBeReplaced));
-            if (newValue == null) throw new ArgumentNullException(nameof(newValue));
-
-            var vertexToBeReplaced = GetVertex(valueToBeReplaced);
-
-            if (vertexToBeReplaced == null)
-            {
-                return new ValidationResult {Successful = false, Message = $"Vertex {valueToBeReplaced} was not found"};
-            }
-
-            if (GetVertex(newValue) != null)
-            {
-                return new ValidationResult
-                    {Successful = false, Message = $"Vertex {newValue} was already in the graph"};
-            }
-
-            vertexToBeReplaced.Value = newValue;
-            _vertices.Remove(valueToBeReplaced);
-            _vertices.Add(newValue, vertexToBeReplaced);
-
-            return ValidationResult.Success;
-        }
-
         private bool ValidateDuplicate(T parent, T child)
         {
             return !_edges.Contains((parent, child));
@@ -222,6 +202,51 @@ namespace Dag.Net.Core
         public IEnumerable<Vertex<T>> GetAllVertices()
         {
             return _vertices.Values;
+        }
+
+        public ValidationResult RenameVertex(T old, T @new)
+        {
+            if (old == null) throw new ArgumentNullException(nameof(old));
+            if (@new == null) throw new ArgumentNullException(nameof(@new));
+            
+            if(!_vertices.ContainsKey(old))
+                return ValidationResult.Success;
+
+            if (_vertices.ContainsKey(@new))
+            {
+                // not sure if there's a smart way to do it, but this should work...
+                var newDag = new Dag<T>();
+
+                foreach (var edge in _edges)
+                {
+                    var parent = Equals(edge.Parent, old) ? @new : edge.Parent;
+                    var child = Equals(edge.Child, old) ? @new : edge.Child;
+                    
+                    var result = newDag.AddEdge(parent, child);
+                    if (!result.Successful)
+                    {
+                        return result;
+                    }
+                }
+                
+                _edges.Clear();
+                _vertices.Clear();
+                _lastAddEdgeValidation = default;
+                
+                newDag._edges.ForEach(x=> AddEdgeInternal(x.Parent, x.Child));
+                return ValidationResult.Success;
+
+            }
+            else
+            {
+                var vertex = GetVertex(old);
+                vertex.Value = @new;
+
+                _vertices.Remove(old);
+                _vertices.Add(@new, vertex);
+                
+                return ValidationResult.Success;
+            }
         }
     }
 }
